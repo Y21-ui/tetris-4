@@ -22,35 +22,41 @@ function initUI() {
   if (!app) return
 
   app.innerHTML = `
-    <div class="game-container">
-      <div class="game-title">俄羅斯方塊</div>
-      <canvas id="gameCanvas" width="${BOARD_WIDTH * BLOCK_SIZE}" height="${BOARD_HEIGHT * BLOCK_SIZE}"></canvas>
-      <div class="controls">
-        <button id="pauseBtn">暫停</button>
-        <button id="restartBtn">重新開始</button>
+    <div class="game-wrapper">
+      <div class="game-container">
+        <div class="game-title">俄羅斯方塊</div>
+        <canvas id="gameCanvas" width="${BOARD_WIDTH * BLOCK_SIZE}" height="${BOARD_HEIGHT * BLOCK_SIZE}"></canvas>
+        <div class="controls">
+          <button id="pauseBtn">暫停</button>
+          <button id="restartBtn">重新開始</button>
+        </div>
       </div>
-    </div>
-    <div class="info-panel">
-      <div class="info-item">
-        <span class="info-label">分數</span>
-        <span class="info-value" id="score">0</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">等級</span>
-        <span class="info-value" id="level">1</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">消除行數</span>
-        <span class="info-value" id="lines">0</span>
-      </div>
-      <div class="keyboard-hints">
-        <strong>操作方式：</strong>
-        <div class="hint-item">← → : 左右移動</div>
-        <div class="hint-item">↓ : 下降</div>
-        <div class="hint-item">空格 : 快速下降</div>
-        <div class="hint-item">Z : 順時針旋轉</div>
-        <div class="hint-item">X : 逆時針旋轉</div>
-        <div class="hint-item">P : 暫停/繼續</div>
+      <div class="info-panel">
+        <div class="info-item">
+          <span class="info-label">分數</span>
+          <span class="info-value" id="score">0</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">等級</span>
+          <span class="info-value" id="level">1</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">消除行數</span>
+          <span class="info-value" id="lines">0</span>
+        </div>
+        <div class="next-piece-section">
+          <div class="next-piece-label">下一個方塊</div>
+          <canvas id="nextPieceCanvas" width="${4 * BLOCK_SIZE}" height="${4 * BLOCK_SIZE}"></canvas>
+        </div>
+        <div class="keyboard-hints">
+          <strong>操作方式：</strong>
+          <div class="hint-item">← → : 左右移動</div>
+          <div class="hint-item">↓ : 下降</div>
+          <div class="hint-item">空格 : 快速下降</div>
+          <div class="hint-item">Z : 順時針旋轉</div>
+          <div class="hint-item">X : 逆時針旋轉</div>
+          <div class="hint-item">P : 暫停/繼續</div>
+        </div>
       </div>
     </div>
   `
@@ -187,7 +193,61 @@ function render() {
   if (renderer) {
     renderer.render(game)
   }
+  renderNextPiece()
   updateUI()
+}
+
+function renderNextPiece() {
+  const canvas = document.getElementById('nextPieceCanvas') as HTMLCanvasElement
+  if (!canvas) return
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  // 清空畫布
+  ctx.fillStyle = '#000'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  // 獲取下一個方塊
+  const nextPiece = game.getNextPiece()
+  const blockSize = BLOCK_SIZE
+
+  // 繪製背景網格
+  ctx.strokeStyle = '#222'
+  ctx.lineWidth = 1
+  for (let y = 0; y < 4; y++) {
+    for (let x = 0; x < 4; x++) {
+      ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize)
+    }
+  }
+
+  // 繪製方塊
+  const positions = nextPiece.getAbsolutePositions()
+  const color = nextPiece.getColor()
+  const minX = Math.min(...positions.map(p => p.x))
+  const minY = Math.min(...positions.map(p => p.y))
+
+  for (const pos of positions) {
+    const x = (pos.x - minX) * blockSize
+    const y = (pos.y - minY) * blockSize
+
+    // 檢查是否在預覽區域內
+    if (
+      x >= 0 &&
+      x < canvas.width &&
+      y >= 0 &&
+      y < canvas.height
+    ) {
+      // 填充
+      ctx.fillStyle = color
+      ctx.fillRect(x + 1, y + 1, blockSize - 2, blockSize - 2)
+
+      // 邊框
+      ctx.strokeStyle = '#fff'
+      ctx.lineWidth = 1
+      ctx.strokeRect(x + 1, y + 1, blockSize - 2, blockSize - 2)
+    }
+  }
 }
 
 function updateUI() {

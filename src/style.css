@@ -33,6 +33,12 @@ body {
   padding: 20px;
 }
 
+.game-wrapper {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
 .game-container {
   display: flex;
   flex-direction: column;
@@ -103,6 +109,31 @@ button:hover {
 
 button:active {
   opacity: 0.8;
+}
+
+.next-piece-section {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  margin: 15px 0;
+}
+
+.next-piece-label {
+  color: #888;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#nextPieceCanvas {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: #000;
+  display: block;
+  margin: 0 auto;
 }
 
 .keyboard-hints {
