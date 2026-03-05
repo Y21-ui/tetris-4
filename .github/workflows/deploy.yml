@@ -29,10 +29,10 @@ jobs:
         run: npm install
 
       - name: Run tests
-        run: npm test
+        run: npm test -- --run
 
       - name: Run tests with coverage
-        run: npm run test:coverage
+        run: npm run test:coverage -- --run
 
   build-and-deploy:
     needs: test
