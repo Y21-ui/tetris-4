@@ -103,6 +103,11 @@ function handleKeyDown(e: KeyboardEvent) {
     togglePause()
   } else if (key === ' ') {
     game.hardDrop()
+  } else if (key === 'z') {
+    game.rotate()
+  } else if (key === 'x') {
+    // @ts-ignore
+    game.rotateCounterClockwise()
   }
 }
 
@@ -123,16 +128,6 @@ function processInput() {
   // 處理下移（持續按下則不斷下降）
   if (keyState['arrowdown']) {
     game.moveDown()
-  }
-
-  // 處理旋轉（Z：順時針，X：逆時針）
-  if (keyState['z']) {
-    game.rotate()
-    keyState['z'] = false // 只旋轉一次
-  }
-  if (keyState['x']) {
-    ;(game as any).rotateCounterClockwise?.()
-    keyState['x'] = false // 只旋轉一次
   }
 }
 
