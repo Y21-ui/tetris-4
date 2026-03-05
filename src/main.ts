@@ -5,11 +5,17 @@ import { Renderer } from './ui/renderer'
 const BOARD_WIDTH = 10
 const BOARD_HEIGHT = 20
 const BLOCK_SIZE = 30
-const GAME_SPEED = 1000 // 毫秒
+const BASE_GAME_SPEED = 800 // 毫秒
+const AUTO_DROP_INTERVAL = 50 // 毫秒
 
 let game = new Game(BOARD_WIDTH, BOARD_HEIGHT)
 let renderer: Renderer
-let gameLoop: number | null = null
+let gameLoopId: number | null = null
+let lastTickTime = 0
+let lastAutoDropTime = 0
+
+// 按鍵狀態跟踪
+const keyState: Record<string, boolean> = {}
 
 function initUI() {
   const app = document.getElementById('app')
@@ -42,7 +48,8 @@ function initUI() {
         <div class="hint-item">← → : 左右移動</div>
         <div class="hint-item">↓ : 下降</div>
         <div class="hint-item">空格 : 快速下降</div>
-        <div class="hint-item">Z/X : 旋轉</div>
+        <div class="hint-item">Z : 順時針旋轉</div>
+        <div class="hint-item">X : 逆時針旋轉</div>
         <div class="hint-item">P : 暫停/繼續</div>
       </div>
     </div>
@@ -56,8 +63,11 @@ function initUI() {
 }
 
 function setupEventListeners() {
-  // 鍵盤控制
+  // 鍵盤按下
   document.addEventListener('keydown', handleKeyDown)
+
+  // 鍵盤抬起
+  document.addEventListener('keyup', handleKeyUp)
 
   // 按鈕控制
   const pauseBtn = document.getElementById('pauseBtn')
@@ -73,38 +83,56 @@ function setupEventListeners() {
 }
 
 function handleKeyDown(e: KeyboardEvent) {
-  switch (e.key) {
-    case 'ArrowLeft':
-      game.moveLeft()
-      e.preventDefault()
-      break
-    case 'ArrowRight':
-      game.moveRight()
-      e.preventDefault()
-      break
-    case 'ArrowDown':
-      game.moveDown()
-      e.preventDefault()
-      break
+  const key = e.key.toLowerCase()
+
+  switch (key) {
+    case 'arrowleft':
+    case 'arrowright':
+    case 'arrowdown':
     case ' ':
-      game.hardDrop()
-      e.preventDefault()
-      break
     case 'z':
-    case 'Z':
-      game.rotate()
-      e.preventDefault()
-      break
     case 'x':
-    case 'X':
-      game.rotate()
-      e.preventDefault()
-      break
     case 'p':
-    case 'P':
-      togglePause()
+      keyState[key] = true
       e.preventDefault()
       break
+  }
+
+  // 立即處理單次按壓的操作
+  if (key === 'p') {
+    togglePause()
+  } else if (key === ' ') {
+    game.hardDrop()
+  }
+}
+
+function handleKeyUp(e: KeyboardEvent) {
+  const key = e.key.toLowerCase()
+  keyState[key] = false
+}
+
+function processInput() {
+  // 處理左右移動
+  if (keyState['arrowleft']) {
+    game.moveLeft()
+  }
+  if (keyState['arrowright']) {
+    game.moveRight()
+  }
+
+  // 處理下移（持續按下則不斷下降）
+  if (keyState['arrowdown']) {
+    game.moveDown()
+  }
+
+  // 處理旋轉（Z：順時針，X：逆時針）
+  if (keyState['z']) {
+    game.rotate()
+    keyState['z'] = false // 只旋轉一次
+  }
+  if (keyState['x']) {
+    ;(game as any).rotateCounterClockwise?.()
+    keyState['x'] = false // 只旋轉一次
   }
 }
 
@@ -120,25 +148,44 @@ function togglePause() {
 
 function restart() {
   game.restart()
+  lastTickTime = 0
+  lastAutoDropTime = 0
   updateUI()
 }
 
-function startGameLoop() {
-  if (gameLoop !== null) {
-    cancelAnimationFrame(gameLoop as any)
-  }
+function gameUpdate(deltaTime: number) {
+  // 計算遊戲速度（基於等級）
+  const gameSpeedMs = BASE_GAME_SPEED / Math.pow(1.05, game.getLevel() - 1)
 
-  const tick = () => {
+  // 檢查是否應該執行遊戲刻度
+  if (lastTickTime === 0 || deltaTime - lastTickTime >= gameSpeedMs) {
     game.tick()
-    render()
-    gameLoop = setTimeout(() => {
-      requestAnimationFrame(tick)
-    }, GAME_SPEED / game.getLevel())
+    lastTickTime = deltaTime
+  }
+}
+
+function gameLoop(timestamp: number) {
+  // 處理輸入
+  processInput()
+
+  // 更新遊戲邏輯
+  gameUpdate(timestamp)
+
+  // 渲染
+  render()
+
+  // 繼續循環
+  gameLoopId = requestAnimationFrame(gameLoop)
+}
+
+function startGameLoop() {
+  if (gameLoopId !== null) {
+    cancelAnimationFrame(gameLoopId)
   }
 
-  gameLoop = setTimeout(() => {
-    requestAnimationFrame(tick)
-  }, GAME_SPEED)
+  lastTickTime = 0
+  lastAutoDropTime = 0
+  gameLoopId = requestAnimationFrame(gameLoop)
 }
 
 function render() {

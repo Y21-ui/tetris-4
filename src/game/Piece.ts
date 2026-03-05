@@ -7,78 +7,226 @@ export class Piece {
   private y: number
   private color: string
 
-  // 定義所有方塊形狀
-  private static readonly SHAPES: Record<PieceType, PieceShape> = {
-    [PieceType.I]: {
-      type: PieceType.I,
-      blocks: [
+  // 定義所有方塊形狀（所有旋轉狀態）
+  private static readonly ROTATIONS: Record<PieceType, Position[][]> = {
+    [PieceType.I]: [
+      // 旋轉狀態 0
+      [
         { x: 0, y: 0 },
         { x: 1, y: 0 },
         { x: 2, y: 0 },
         { x: 3, y: 0 },
       ],
-      color: '#00f0f0',
-    },
-    [PieceType.O]: {
-      type: PieceType.O,
-      blocks: [
+      // 旋轉狀態 1
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: 2 },
+        { x: 0, y: 3 },
+      ],
+      // 旋轉狀態 2（與 0 相同）
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+        { x: 3, y: 0 },
+      ],
+      // 旋轉狀態 3（與 1 相同）
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: 2 },
+        { x: 0, y: 3 },
+      ],
+    ],
+    [PieceType.O]: [
+      // O 方塊旋轉後形狀不變
+      [
         { x: 0, y: 0 },
         { x: 1, y: 0 },
         { x: 0, y: 1 },
         { x: 1, y: 1 },
       ],
-      color: '#f0f000',
-    },
-    [PieceType.T]: {
-      type: PieceType.T,
-      blocks: [
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+      ],
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+      ],
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+      ],
+    ],
+    [PieceType.T]: [
+      // 旋轉狀態 0
+      [
         { x: 1, y: 0 },
         { x: 0, y: 1 },
         { x: 1, y: 1 },
         { x: 2, y: 1 },
       ],
-      color: '#a000f0',
-    },
-    [PieceType.S]: {
-      type: PieceType.S,
-      blocks: [
+      // 旋轉狀態 1（順時針旋轉 90°）
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 0, y: 2 },
+      ],
+      // 旋轉狀態 2（順時針旋轉 180°）
+      [
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+        { x: 1, y: 2 },
+      ],
+      // 旋轉狀態 3（順時針旋轉 270°）
+      [
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 1, y: 2 },
+      ],
+    ],
+    [PieceType.S]: [
+      // 旋轉狀態 0
+      [
         { x: 1, y: 0 },
         { x: 2, y: 0 },
         { x: 0, y: 1 },
         { x: 1, y: 1 },
       ],
-      color: '#00f000',
-    },
-    [PieceType.Z]: {
-      type: PieceType.Z,
-      blocks: [
+      // 旋轉狀態 1
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 1, y: 2 },
+      ],
+      // 旋轉狀態 2（與 0 相同）
+      [
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+      ],
+      // 旋轉狀態 3（與 1 相同）
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 1, y: 2 },
+      ],
+    ],
+    [PieceType.Z]: [
+      // 旋轉狀態 0
+      [
         { x: 0, y: 0 },
         { x: 1, y: 0 },
         { x: 1, y: 1 },
         { x: 2, y: 1 },
       ],
-      color: '#f00000',
-    },
-    [PieceType.J]: {
-      type: PieceType.J,
-      blocks: [
+      // 旋轉狀態 1
+      [
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 0, y: 2 },
+      ],
+      // 旋轉狀態 2（與 0 相同）
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+      ],
+      // 旋轉狀態 3（與 1 相同）
+      [
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 0, y: 2 },
+      ],
+    ],
+    [PieceType.J]: [
+      // 旋轉狀態 0
+      [
         { x: 0, y: 0 },
         { x: 0, y: 1 },
         { x: 1, y: 1 },
         { x: 2, y: 1 },
       ],
-      color: '#0000f0',
-    },
-    [PieceType.L]: {
-      type: PieceType.L,
-      blocks: [
+      // 旋轉狀態 1
+      [
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 1, y: 2 },
+        { x: 0, y: 2 },
+      ],
+      // 旋轉狀態 2
+      [
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+        { x: 2, y: 0 },
+      ],
+      // 旋轉狀態 3
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 1, y: 2 },
+      ],
+    ],
+    [PieceType.L]: [
+      // 旋轉狀態 0
+      [
         { x: 2, y: 0 },
         { x: 0, y: 1 },
         { x: 1, y: 1 },
         { x: 2, y: 1 },
       ],
-      color: '#f0a000',
-    },
+      // 旋轉狀態 1
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: 2 },
+        { x: 1, y: 2 },
+      ],
+      // 旋轉狀態 2
+      [
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+        { x: 0, y: 0 },
+      ],
+      // 旋轉狀態 3
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 1, y: 2 },
+      ],
+    ],
+  }
+
+  // 定義顏色
+  private static readonly COLORS: Record<PieceType, string> = {
+    [PieceType.I]: '#00f0f0',
+    [PieceType.O]: '#f0f000',
+    [PieceType.T]: '#a000f0',
+    [PieceType.S]: '#00f000',
+    [PieceType.Z]: '#f00000',
+    [PieceType.J]: '#0000f0',
+    [PieceType.L]: '#f0a000',
   }
 
   constructor(type: PieceType, x: number = 3, y: number = 0) {
@@ -86,8 +234,7 @@ export class Piece {
     this.x = x
     this.y = y
     this.rotationState = 0
-    const shape = Piece.SHAPES[type]
-    this.color = shape.color
+    this.color = Piece.COLORS[type]
   }
 
   /**
@@ -120,11 +267,11 @@ export class Piece {
   }
 
   /**
-   * 取得方塊的絕對位置（考慮旋轉）
+   * 取得方塊的絕對位置（根據旋轉）
    */
   getAbsolutePositions(): Position[] {
-    const shape = Piece.SHAPES[this.type]
-    return shape.blocks.map(({ x, y }) => ({
+    const blocks = Piece.ROTATIONS[this.type][this.rotationState]
+    return blocks.map(({ x, y }) => ({
       x: this.x + x,
       y: this.y + y,
     }))
@@ -150,8 +297,13 @@ export class Piece {
    */
   rotate(): void {
     this.rotationState = ((this.rotationState + 1) % 4) as RotationState
-    // 注意：簡化實現，只改變旋轉狀態
-    // 完整實現應該根據旋轉狀態改變方塊的形狀
+  }
+
+  /**
+   * 反向旋轉方塊（逆時針）
+   */
+  rotateCounterClockwise(): void {
+    this.rotationState = ((this.rotationState + 3) % 4) as RotationState
   }
 
   /**

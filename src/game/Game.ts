@@ -159,16 +159,53 @@ export class Game {
   }
 
   /**
-   * 旋轉方塊
+   * 旋轉方塊（順時針）
    */
   rotate(): boolean {
     if (this.state !== GameState.PLAYING || !this.currentPiece) {
       return false
     }
 
-    // 簡化實現：只改變旋轉狀態
-    // TODO: 實現完整的 SRS（超級旋轉系統）
-    this.currentPiece.rotate()
+    const piece = this.currentPiece
+    const oldRotation = piece.getRotationState()
+
+    // 嘗試旋轉
+    piece.rotate()
+
+    // 檢查旋轉後是否有效
+    const positions = piece.getAbsolutePositions()
+    if (!this.board.arePositionsValid(positions)) {
+      // 旋轉失敗，還原旋轉狀態
+      for (let i = 0; i < 3; i++) {
+        piece.rotate()
+      }
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * 旋轉方塊（逆時針）
+   */
+  rotateCounterClockwise(): boolean {
+    if (this.state !== GameState.PLAYING || !this.currentPiece) {
+      return false
+    }
+
+    const piece = this.currentPiece
+
+    // 嘗試逆向旋轉
+    piece.rotateCounterClockwise()
+
+    // 檢查旋轉後是否有效
+    const positions = piece.getAbsolutePositions()
+    if (!this.board.arePositionsValid(positions)) {
+      // 旋轉失敗，還原旋轉狀態
+      piece.rotate()
+      return false
+    }
+
     return true
   }
 
